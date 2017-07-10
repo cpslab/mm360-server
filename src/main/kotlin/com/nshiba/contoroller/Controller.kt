@@ -1,4 +1,4 @@
-package com.nshiba
+package com.nshiba.contoroller
 
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
@@ -25,11 +25,6 @@ class Controller {
     @RequestMapping("/")
     internal fun index(): String {
         return "index"
-    }
-
-    @RequestMapping("/upload")
-    internal fun upload(): String {
-        return "upload"
     }
 
     @RequestMapping("/db")

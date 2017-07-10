@@ -1,8 +1,14 @@
 package com.nshiba.contoroller
 
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.stereotype.Controller
+import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
 
-@RestController
+@Controller
 class UploadController {
 
+    @RequestMapping("/upload")
+    internal fun upload(@RequestParam("name") name: String): String {
+        return "hello. $name."
+    }
 }

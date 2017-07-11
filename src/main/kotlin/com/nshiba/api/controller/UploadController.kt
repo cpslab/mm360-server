@@ -4,7 +4,7 @@ import com.nshiba.entity.SensorCsv
 import org.springframework.web.bind.annotation.*
 
 @RestController
-@RequestMapping("/upload")
+@RequestMapping("/api/upload")
 class UploadController {
 
     @RequestMapping(method = arrayOf(RequestMethod.GET))

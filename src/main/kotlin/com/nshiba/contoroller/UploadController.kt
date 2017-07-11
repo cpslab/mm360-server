@@ -13,7 +13,7 @@ class UploadController {
     }
 
     @RequestMapping(method = arrayOf(RequestMethod.POST))
-    internal fun post(@RequestBody sensor: SensorCsv): SensorCsv {
+    internal fun post(@RequestBody sensor: Array<SensorCsv>): Array<SensorCsv> {
         return sensor
     }
 }

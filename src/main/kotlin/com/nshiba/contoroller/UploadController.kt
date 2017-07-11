@@ -1,9 +1,7 @@
 package com.nshiba.contoroller
 
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RequestMethod
-import org.springframework.web.bind.annotation.RequestParam
-import org.springframework.web.bind.annotation.RestController
+import com.nshiba.model.SensorCsv
+import org.springframework.web.bind.annotation.*
 
 @RestController
 @RequestMapping("/upload")
@@ -12,5 +10,10 @@ class UploadController {
     @RequestMapping(method = arrayOf(RequestMethod.GET))
     internal fun upload(@RequestParam("name") name: String = "World"): String {
         return "hello. $name."
+    }
+
+    @RequestMapping(method = arrayOf(RequestMethod.POST))
+    internal fun post(@RequestBody sensor: SensorCsv): SensorCsv {
+        return sensor
     }
 }

@@ -1,4 +1,4 @@
-package com.nshiba.model
+package com.nshiba.entity
 
 data class SensorCsv(
         var unixtime: Long = 0L,

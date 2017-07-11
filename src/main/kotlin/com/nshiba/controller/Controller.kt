@@ -1,4 +1,4 @@
-package com.nshiba.contoroller
+package com.nshiba.controller
 
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource

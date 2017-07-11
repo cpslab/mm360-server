@@ -1,6 +1,6 @@
-package com.nshiba.contoroller
+package com.nshiba.api.controller
 
-import com.nshiba.model.SensorCsv
+import com.nshiba.entity.SensorCsv
 import org.springframework.web.bind.annotation.*
 
 @RestController

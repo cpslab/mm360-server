@@ -1,16 +1,15 @@
 package com.nshiba.model
 
 data class SensorCsv(
-        val unixtime: Long,
-        val timestamp: String,
-        val longitude: Double,
-        val latitude: Double,
-        val altitude: Double,
-        val accuracy: Double,
-        val pressure: Double,
-        val theta: Double,
-        val zengokeisya: Double,
-        val sayukeisya: Double
+        var unixtime: Long = 0L,
+        var timestamp: String = "",
+        var longitude: Double = 0.0,
+        var latitude: Double = 0.0,
+        var altitude: Double = 0.0,
+        var accuracy: Double = 0.0,
+        var pressure: Double = 0.0,
+        var theta: Double = 0.0,
+        var zengokeisya: Double = 0.0,
+        var sayukeisya: Double = 0.0
 )
-//前後傾斜, 左右傾斜, orientation1, orientation2, orientation3, lowpass方位角
-//149.23602,11.477978,-4.062758,154.01222,-76.90093,3.3370094
+//{ "unixtime": 1496536003990, "timestamp": "2017-06-04_09:26:43", "longitude": 35.7502211, "latitude": 139.8147858, "altitude": 38.0, "accuracy": 3.0, "pressure": 1007.46686, "theta": 149.23602, "zengokeisya": 11.477978, "sayukeisya": -4.062758 }

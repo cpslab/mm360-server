@@ -12,7 +12,7 @@ class UploadController {
         return "hello. $name."
     }
 
-    @CrossOrigin
+    @CrossOrigin(origins = arrayOf("http://localhost:3000"))
     @RequestMapping(method = arrayOf(RequestMethod.POST))
     internal fun post(@RequestBody sensor: Array<SensorCsv>): Array<SensorCsv> {
         return sensor

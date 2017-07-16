@@ -23,7 +23,7 @@ class SensorCalculateModel(private val sensorData: List<String>){
     }
 
     private fun calcGps(point1: CapturePointData, point2: CapturePointData) {
-        val maxIndex = Math.min(point1.sensorData.size, point2.sensorData.size)
+        val maxIndex = Math.min(point1.sensorData.size, point2.sensorData.size) - 1
         for (i in 0..maxIndex) {
             point1.sensorData[i].links.add(
                     calcGpeDirection(point2.id, point1.sensorData[i].gps, point2.sensorData[i].gps))

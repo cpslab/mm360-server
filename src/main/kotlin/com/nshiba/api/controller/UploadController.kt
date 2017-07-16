@@ -15,7 +15,7 @@ class UploadController {
 
     @CrossOrigin(origins = arrayOf("http://localhost:3000"))
     @RequestMapping(method = arrayOf(RequestMethod.POST))
-    internal fun post(@RequestBody sensors: MultipartFile): MultipartFile {
+    internal fun post(@RequestParam(name = "file") sensors: MultipartFile): MultipartFile {
         return sensors
     }
 }

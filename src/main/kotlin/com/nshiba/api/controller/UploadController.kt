@@ -2,9 +2,10 @@ package com.nshiba.api.controller
 
 import com.nshiba.entity.SensorCsv
 import org.springframework.web.bind.annotation.*
+import org.springframework.web.multipart.MultipartFile
 
 @RestController
-@RequestMapping("/api/upload")
+@RequestMapping("/api/upload/csv")
 class UploadController {
 
     @RequestMapping(method = arrayOf(RequestMethod.GET))
@@ -14,7 +15,7 @@ class UploadController {
 
     @CrossOrigin(origins = arrayOf("http://localhost:3000"))
     @RequestMapping(method = arrayOf(RequestMethod.POST))
-    internal fun post(@RequestBody sensor: Array<SensorCsv>): Array<SensorCsv> {
-        return sensor
+    internal fun post(@RequestBody sensors: MultipartFile): MultipartFile {
+        return sensors
     }
 }

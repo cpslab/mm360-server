@@ -8,24 +8,29 @@ import com.nshiba.model.AwsClient
 
 
 @RestController
-@RequestMapping("/api/upload/csv")
-class UploadController {
+class ApiController {
 
-    private val filename = "/test/data.json"
+    private val filename = "test/data.json"
 
-    @RequestMapping(method = arrayOf(RequestMethod.GET))
+    private val awsClient = AwsClient()
+
+    @RequestMapping(path = arrayOf("/api/upload/csv"), method = arrayOf(RequestMethod.GET))
     internal fun upload(@RequestParam("name") name: String = "World"): String {
         return "hello. $name."
     }
 
     @CrossOrigin(origins = arrayOf("http://localhost:3000"))
-    @RequestMapping(method = arrayOf(RequestMethod.POST))
+    @RequestMapping(path = arrayOf("/api/upload/csv"), method = arrayOf(RequestMethod.POST))
     internal fun post(@RequestParam(name = "file") sensors: List<MultipartFile>): String? {
         val model = SensorCalculateModel(sensors.map { String(it.bytes) })
         val uploadData = model.createData()
         val json = ObjectMapper().writeValueAsString(uploadData)
 
-        val awsClient = AwsClient()
         return awsClient.putObject(filename, filename, json)
+    }
+
+    @RequestMapping(path = arrayOf("/api/projects"), method = arrayOf(RequestMethod.GET))
+    internal fun fetchProject(): String {
+        return awsClient.fetchProjectList()
     }
 }

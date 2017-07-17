@@ -4,11 +4,12 @@ import com.amazonaws.AmazonClientException
 import com.amazonaws.AmazonServiceException
 import com.amazonaws.auth.BasicAWSCredentials
 import com.amazonaws.services.s3.AmazonS3Client
+import com.amazonaws.services.s3.model.ListObjectsRequest
 import java.io.ByteArrayInputStream
 import java.io.IOException
 
 
-class AwsClient() {
+class AwsClient {
 
     private val ENDPOINT_URL = "https://s3-ap-northeast-1.amazonaws.com"
 
@@ -26,26 +27,24 @@ class AwsClient() {
         return try {
             val inputStream = ByteArrayInputStream(data.toByteArray())
             s3Client.putObject(bucketName, key, inputStream, null)
-
             "upload success"
         } catch (ioe: IOException) {
             "File IO Error: ${ioe.message}"
         } catch (ase: AmazonServiceException) {
-            "Caught an AmazonServiceException, " +
-                    "which means your request made it to Amazon S3, " +
-                    "but was rejected with an error response for some reason.\n" +
-                    "Error Message: ${ase.message}, " +
-                    "HTTP Status Code: ${ase.statusCode}, " +
-                    "AWS Error Code: ${ase.errorCode}, " +
-                    "Error Type: ${ase.errorType}, " +
-                    "Request ID: ${ase.requestId}"
+            """Caught an AmazonServiceException,
+                    which means your request made it to Amazon S3,
+                    but was rejected with an error response for some reason.
+                    Error Message: ${ase.message},
+                    HTTP Status Code: ${ase.statusCode},
+                    AWS Error Code: ${ase.errorCode},
+                    Error Type: ${ase.errorType},
+                    Request ID: ${ase.requestId}"""
         } catch (ace: AmazonClientException) {
-            "Caught an AmazonClientException, which " +
-            		"means the client encountered " +
-                    "an internal error while trying to " +
-                    "communicate with S3, " +
-                    "such as not being able to access the network.\n" +
-                    "Error Message: ${ace.message}"
+            """Caught an AmazonClientException,
+                    which means the client encountered
+                    an internal error while trying to communicate with S3,
+                    such as not being able to access the network.
+                    Error Message: ${ace.message}"""
         }
     }
 
@@ -53,5 +52,30 @@ class AwsClient() {
         val credential = BasicAWSCredentials(ACCESS_KEY, SECRET_KEY)
         val client = AmazonS3Client(credential)
         return client
+    }
+
+    fun fetchProjectList(): String {
+        return try {
+            val request = ListObjectsRequest(bucketName, "/", "/", null, 1000)
+            val listObjects = s3Client.listObjects(request)
+            listObjects.commonPrefixes.toString()
+        } catch (ioe: IOException) {
+            "File IO Error: ${ioe.message}"
+        } catch (ase: AmazonServiceException) {
+            """Caught an AmazonServiceException,
+                    which means your request made it to Amazon S3,
+                    but was rejected with an error response for some reason.
+                    Error Message: ${ase.message},
+                    HTTP Status Code: ${ase.statusCode},
+                    AWS Error Code: ${ase.errorCode},
+                    Error Type: ${ase.errorType},
+                    Request ID: ${ase.requestId}"""
+        } catch (ace: AmazonClientException) {
+            """Caught an AmazonClientException,
+                    which means the client encountered
+                    an internal error while trying to communicate with S3,
+                    such as not being able to access the network.
+                    Error Message: ${ace.message}"""
+        }
     }
 }

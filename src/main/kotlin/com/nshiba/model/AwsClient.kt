@@ -2,7 +2,7 @@ package com.nshiba.model
 
 import com.amazonaws.AmazonClientException
 import com.amazonaws.AmazonServiceException
-import com.amazonaws.auth.profile.ProfileCredentialsProvider
+import com.amazonaws.auth.BasicAWSCredentials
 import com.amazonaws.services.s3.AmazonS3Client
 import java.io.ByteArrayInputStream
 import java.io.IOException
@@ -50,7 +50,8 @@ class AwsClient() {
     }
 
     private fun createClient(): AmazonS3Client {
-        val client = AmazonS3Client(ProfileCredentialsProvider())
+        val credential = BasicAWSCredentials(ACCESS_KEY, SECRET_KEY)
+        val client = AmazonS3Client(credential)
         return client
     }
 }

@@ -4,8 +4,7 @@ import com.amazonaws.AmazonClientException
 import com.amazonaws.AmazonServiceException
 import com.amazonaws.auth.profile.ProfileCredentialsProvider
 import com.amazonaws.services.s3.AmazonS3Client
-import java.io.File
-import java.io.FileWriter
+import java.io.ByteArrayInputStream
 import java.io.IOException
 
 
@@ -25,12 +24,8 @@ class AwsClient() {
 
     fun putObject(filename: String, key: String, data: String): String {
         return try {
-            val file = File(filename)
-            val writer = FileWriter(file)
-            writer.write(data)
-            writer.close()
-
-            s3Client.putObject(bucketName, key, file)
+            val inputStream = ByteArrayInputStream(data.toByteArray())
+            s3Client.putObject(bucketName, key, inputStream, null)
 
             "upload success"
         } catch (ioe: IOException) {

@@ -33,6 +33,8 @@ dependencies {
     compile('org.springframework.boot:spring-boot-starter-thymeleaf') {
         exclude group: 'nz.net.ultraq.thymeleaf', module: 'thymeleaf-layout-dialect'
     }
+    compile('org.springframework.cloud:spring-cloud-starter-aws')
+    compile('org.springframework.cloud:spring-cloud-aws-context')
 
     compile 'org.postgresql:postgresql:9.4.1212'
     compile 'com.zaxxer:HikariCP:2.6.0'

@@ -9,7 +9,7 @@ class SensorCalculateModel(private val sensorData: List<String>){
 
     private lateinit var data: Array<CapturePointData>
 
-    fun createJsonData(): Array<CapturePointData> {
+    fun createData(): Array<CapturePointData> {
         val sensorArray = validateSensorArray(sensorData)
         data = sensorArray.mapIndexed { i, list ->
             CapturePointData("video$i", "theta$i", list)

@@ -5,7 +5,14 @@ import com.amazonaws.AmazonServiceException
 import com.amazonaws.auth.BasicAWSCredentials
 import com.amazonaws.services.s3.AmazonS3Client
 import com.amazonaws.services.s3.model.ListObjectsRequest
+import sun.misc.BASE64Encoder
 import java.io.*
+import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter
+import java.time.temporal.ChronoField
+import java.util.*
+import javax.crypto.Mac
+import javax.crypto.spec.SecretKeySpec
 
 
 class AwsClient {
@@ -24,6 +31,8 @@ class AwsClient {
 
     private val s3Client by lazy { createClient() }
 
+    private val dataTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")
+
     private fun createClient(): AmazonS3Client {
         val credential = BasicAWSCredentials(ACCESS_KEY, SECRET_KEY)
         val client = AmazonS3Client(credential)
@@ -31,8 +40,12 @@ class AwsClient {
     }
 
     fun putObject(filename: String, data: String): String {
+        val inputStream = ByteArrayInputStream(data.toByteArray())
+        return putObject(filename, inputStream)
+    }
+
+    fun putObject(filename: String, inputStream: InputStream): String {
         return try {
-            val inputStream = ByteArrayInputStream(data.toByteArray())
             s3Client.putObject(bucketName, rootDir + filename, inputStream, null)
             "upload success"
         } catch (ioe: IOException) {
@@ -75,6 +88,33 @@ class AwsClient {
         } catch (ace: AmazonClientException) {
             showACEMessage(ace)
         }
+    }
+
+    fun generateSignature(projectName: String): Pair<String, String> {
+        val key = "$" + "key"
+        val contentType = "$" + "Content-Type"
+
+        val tomorrow = ZonedDateTime.now().with(ChronoField.NANO_OF_DAY, 0).plusDays(1)
+        val dateStr = dataTimeFormatter.format(tomorrow)
+
+        val policy = """{"expiration": "$dateStr",
+                        "conditions": [
+                            {"bucket": "$bucketName"},
+                            ["starts-with", "$key", "projects/"],
+                            {"acl": "private"},
+                            {"success_action_redirect": "http://localhost:3000/success.html"},
+                            ["starts-with", "$contentType", "video/"]
+                        ]
+                     }"""
+
+        val hmacSha1 = "HmacSHA1"
+        val encodedPolicy = Base64.getEncoder().encodeToString(policy.toByteArray()).replace("\n", "")
+        val hmac = Mac.getInstance(hmacSha1)
+        hmac.init(SecretKeySpec(SECRET_KEY.toByteArray(), hmacSha1))
+        val encodedSignature =
+                Base64.getEncoder().encodeToString(hmac.doFinal(encodedPolicy.toByteArray())).replace("\n", "")
+
+        return Pair(encodedPolicy, encodedSignature)
     }
 
     private fun showASEMessage(ase: AmazonServiceException) =

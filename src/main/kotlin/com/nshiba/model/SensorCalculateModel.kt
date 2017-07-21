@@ -4,6 +4,7 @@ import com.nshiba.entity.CapturePointData
 import com.nshiba.entity.GpsData
 import com.nshiba.entity.LinkData
 import com.nshiba.entity.SensorData
+import com.nshiba.radian
 
 class SensorCalculateModel(private val sensorData: List<String>){
 
@@ -77,5 +78,3 @@ class SensorCalculateModel(private val sensorData: List<String>){
 
     private fun atan2(a: Double, b: Double): Double = Math.atan2(a, b)
 }
-
-private fun Double.radian(): Double = this * Math.PI / 180

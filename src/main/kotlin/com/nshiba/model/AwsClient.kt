@@ -5,8 +5,12 @@ import com.amazonaws.AmazonServiceException
 import com.amazonaws.auth.BasicAWSCredentials
 import com.amazonaws.services.s3.AmazonS3Client
 import com.amazonaws.services.s3.model.ListObjectsRequest
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.nshiba.toStringFromJackson
 import sun.misc.BASE64Encoder
 import java.io.*
+import java.security.InvalidKeyException
+import java.security.NoSuchAlgorithmException
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoField
@@ -90,7 +94,7 @@ class AwsClient {
         }
     }
 
-    fun generateSignature(projectName: String): Pair<String, String> {
+    fun generateSignature(projectName: String): String? {
         val key = "$" + "key"
         val contentType = "$" + "Content-Type"
 
@@ -107,14 +111,26 @@ class AwsClient {
                         ]
                      }"""
 
-        val hmacSha1 = "HmacSHA1"
-        val encodedPolicy = Base64.getEncoder().encodeToString(policy.toByteArray()).replace("\n", "")
-        val hmac = Mac.getInstance(hmacSha1)
-        hmac.init(SecretKeySpec(SECRET_KEY.toByteArray(), hmacSha1))
-        val encodedSignature =
-                Base64.getEncoder().encodeToString(hmac.doFinal(encodedPolicy.toByteArray())).replace("\n", "")
+        println(policy)
 
-        return Pair(encodedPolicy, encodedSignature)
+        val hmacSha1 = "HmacSHA1"
+        val encodedPolicy = Base64.getEncoder().encodeToString(policy.toByteArray())
+        val encodedSignature = try {
+            val hmac = Mac.getInstance(hmacSha1)
+            hmac.init(SecretKeySpec(SECRET_KEY.toByteArray(), hmacSha1))
+            Base64.getEncoder().encodeToString(hmac.doFinal(encodedPolicy.toByteArray()))
+        } catch (noe: NoSuchAlgorithmException) {
+            noe.fillInStackTrace()
+            return@generateSignature noe.message
+        } catch (ine: InvalidKeyException) {
+            ine.fillInStackTrace()
+            return@generateSignature ine.message
+        } catch (ile: IllegalStateException) {
+            ile.fillInStackTrace()
+            return@generateSignature ile.message
+        }
+
+        return arrayOf(encodedPolicy, encodedSignature).toStringFromJackson()
     }
 
     private fun showASEMessage(ase: AmazonServiceException) =
@@ -135,3 +151,4 @@ class AwsClient {
                     Error Message: ${ace.message}"""
 
 }
+

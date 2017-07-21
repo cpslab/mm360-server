@@ -42,7 +42,7 @@ class ApiController {
     }
 
     @RequestMapping(path = arrayOf("/api/project/{name}/policy"), method = arrayOf(RequestMethod.GET))
-    internal fun fetchProjectPolicy(@PathVariable name: String): Pair<String, String> {
+    internal fun fetchProjectPolicy(@PathVariable name: String): String? {
         return awsClient.generateSignature(name)
     }
 }

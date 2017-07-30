@@ -8,13 +8,13 @@ import com.nshiba.radian
 
 class SensorCalculateModel(private val sensorData: List<String>){
 
-    private lateinit var data: Array<CapturePointData>
+    private lateinit var data: List<CapturePointData>
 
-    fun createData(): Array<CapturePointData> {
+    fun createData(): List<CapturePointData> {
         val sensorArray = validateSensorArray(sensorData)
         data = sensorArray.mapIndexed { i, list ->
             CapturePointData("video$i", "theta$i", list)
-        }.toTypedArray()
+        }
 
         data.forEach { target ->
             data.filter { it != target }.forEach { calcGps(target, it) }
@@ -32,9 +32,12 @@ class SensorCalculateModel(private val sensorData: List<String>){
     }
 
     private fun validateSensorArray(sensorData: List<String>): List<List<SensorData>> {
-        val sensorStringArrays = sensorData.map {
-            it.trim().split("\n").map { x -> x.split(",") }.drop(1)
-        }
+
+        val sensorStringArrays = sensorData
+                .filter { !it.isEmpty() }
+                .map {
+                    it.trim().split("\n").map { x -> x.split(",") }.drop(1)
+                }
 
         val sensorArrays = sensorStringArrays.map {
             it.map {

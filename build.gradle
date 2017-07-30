@@ -38,6 +38,7 @@ dependencies {
         exclude group: 'nz.net.ultraq.thymeleaf', module: 'thymeleaf-layout-dialect'
     }
     compile 'com.amazonaws:aws-java-sdk-s3'
+    compile "com.fasterxml.jackson.module:jackson-module-kotlin:2.8.7"
 
     compile 'org.postgresql:postgresql:9.4.1212'
     compile 'com.zaxxer:HikariCP:2.6.0'

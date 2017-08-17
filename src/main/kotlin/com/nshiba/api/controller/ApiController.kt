@@ -2,12 +2,11 @@ package com.nshiba.api.controller
 
 import com.nshiba.model.SensorCalculateModel
 import org.springframework.web.bind.annotation.*
-import org.springframework.web.multipart.MultipartFile
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.nshiba.entity.ProjectListItemData
-import com.nshiba.entity.UploadData
+import com.nshiba.entity.*
 import com.nshiba.model.AwsClient
 import com.nshiba.toObject
+import com.nshiba.toStringFromJackson
 
 
 @RestController
@@ -28,7 +27,7 @@ class ApiController {
     }
 
     @CrossOrigin(origins = arrayOf("http://localhost:3000"))
-    @RequestMapping(path = arrayOf("/api/{name}/sensor"), method = arrayOf(RequestMethod.POST))
+    @RequestMapping(path = arrayOf("/api/project/{name}/sensor"), method = arrayOf(RequestMethod.POST))
     internal fun uploadSensor(@PathVariable name: String, @RequestBody data: String): String {
         val dataList = data.split(";")
         println("uploadData: ${dataList.size}")
@@ -37,18 +36,15 @@ class ApiController {
         val uploadData = model.createData()
         val json = ObjectMapper().writeValueAsString(uploadData)
         val filename = "$name/$sensorFileName"
-        awsClient.putObject(filename, json)
+        awsClient.putSensorData(name, json)
 
         val projectList = awsClient.fetchProjectList().toObject<List<ProjectListItemData>>().toMutableList()
         println(projectList)
         projectList.map {
-            when (it.projectName) {
-                name -> {
-                    it.dataPath = "projects/$filename"
-                    return@map it
-                }
-                else -> it
+            if (it.projectName == name) {
+                it.dataPath = "projects/$filename"
             }
+            it
         }
         println(projectList)
 
@@ -56,9 +52,20 @@ class ApiController {
     }
 
     @CrossOrigin(origins = arrayOf("http://localhost:3000"))
-    @RequestMapping(path = arrayOf("/api/{name}/sensor"), method = arrayOf(RequestMethod.GET))
+    @RequestMapping(path = arrayOf("/api/project/{name}/sensor"), method = arrayOf(RequestMethod.GET))
     internal fun fetchSensor(@PathVariable name: String): String {
         return awsClient.fetchSensorData(name)
+    }
+
+    @CrossOrigin(origins = arrayOf("http://localhost:3000"))
+    @RequestMapping(path = arrayOf("/api/project/{name}/pre-signed-url-list"), method = arrayOf(RequestMethod.GET))
+    internal fun fetchPreSignedUploadUrlList(@PathVariable name: String): List<UploadTargetVideoData> {
+        val sensorDataList = awsClient.fetchSensorData(name).toObject<List<CapturePointData>>()
+        val preSignedUploadUrlList = sensorDataList.mapIndexed { index, (_, _, sensorData) ->
+            val url = fetchProjectPolicy(name, "point$index.mp4", "video/mp4")
+            UploadTargetVideoData(index, url, sensorData[0].gps)
+        }
+        return preSignedUploadUrlList
     }
 
     @CrossOrigin(origins = arrayOf("http://localhost:3000"))
@@ -75,10 +82,41 @@ class ApiController {
     }
 
     @CrossOrigin(origins = arrayOf("http://localhost:3000"))
+    @RequestMapping(path = arrayOf("/api/project/{name}"), method = arrayOf(RequestMethod.PATCH))
+    internal fun updateProjectData(@PathVariable name: String, @RequestBody body: ProjectListItemData): String {
+        println("update project data: patch")
+        println(body)
+
+        updateProjectList(body)
+        updateSensorData(body, name)
+
+        return "success"
+    }
+
+    private fun updateSensorData(data: ProjectListItemData, name: String) {
+        val sensorData = awsClient.fetchSensorData(name).toObject<List<CapturePointData>>()
+        data.pointVideoPathList.forEach { (id, path) ->
+            sensorData.toMutableList()
+                    .filter { it.id == "video$id" }
+                    .map { it.path = path }
+        }
+        println("sensor data: ${sensorData.map { "id: ${it.id}, path: ${it.path}" }}")
+        awsClient.putSensorData(name, sensorData.toStringFromJackson())
+    }
+
+    private fun updateProjectList(data: ProjectListItemData) {
+        val projectList = awsClient.fetchProjectList().toObject<List<ProjectListItemData>>()
+        val updatedList = projectList.map {
+            if (it.projectId == data.projectId) { data } else { it }
+        }
+        awsClient.updateProjectList(updatedList)
+    }
+
+    @CrossOrigin(origins = arrayOf("http://localhost:3000"))
     @RequestMapping(path = arrayOf("/api/policy"), method = arrayOf(RequestMethod.GET))
     internal fun fetchProjectPolicy(@RequestParam("project_name") projectName: String,
                                     @RequestParam("filename") filename: String,
-                                    @RequestParam("content_type") contentType: String): String? {
+                                    @RequestParam("content_type") contentType: String): String {
         println("$projectName/$filename")
         return awsClient.generateSingedUrl(projectName, filename, contentType)
     }

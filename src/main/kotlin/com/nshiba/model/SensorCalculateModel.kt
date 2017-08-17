@@ -44,8 +44,8 @@ class SensorCalculateModel(private val sensorData: List<String>){
                 SensorData.build {
                     unixtime = it[0].toLong()
                     timestamp = it[1]
-                    longitude = it[2].toDouble()
-                    latitude = it[3].toDouble()
+                    longitude = it[3].toDouble()
+                    latitude = it[2].toDouble()
                     altitude = it[4].toDouble()
                     theta = it[7].toDouble()
                     pitchX = it[8].toDouble()

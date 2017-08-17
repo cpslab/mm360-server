@@ -28,11 +28,15 @@ class AwsClient {
 
     private val projectListPath = "project-list.json"
 
+    private val sensorFileName = "data.json"
+
     private fun createClient(): AmazonS3 = AmazonS3ClientBuilder
             .standard()
             .withEndpointConfiguration(AwsClientBuilder.EndpointConfiguration(ENDPOINT_URL, REGION))
             .withCredentials(ProfileCredentialsProvider())
             .build()
+
+    fun putSensorData(projectName: String, json: String) = putObject("$projectName/$sensorFileName", json)
 
     fun putObject(filename: String, data: String): String = putObject(filename, data.byteInputStream())
 
@@ -75,8 +79,8 @@ class AwsClient {
 
     fun fetchSensorData(projectName: String): String =
             try {
-                val s3Object = s3Client.getObject(bucketName, "$rootDir/$projectName/data.json")
                 val path = "$rootDir/$projectName/data.json"
+                val s3Object = s3Client.getObject(bucketName, path)
                 println(path)
                 s3Object.objectContent.reader().readText()
             } catch (ioe: IOException) {

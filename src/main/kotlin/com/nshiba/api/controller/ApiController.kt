@@ -70,7 +70,8 @@ class ApiController {
         return preSignedUploadUrlList
     }
 
-    @CrossOrigin(origins = arrayOf("http://localhost:3000", "https://cpslab.github.io/mm360/"))
+//    @CrossOrigin(origins = arrayOf("http://localhost:3000", "https://cpslab.github.io/mm360/"))
+    @CrossOrigin(origins = arrayOf("*"))
     @RequestMapping(path = arrayOf("/api/projects"), method = arrayOf(RequestMethod.GET))
     internal fun fetchProject(): String {
         return awsClient.fetchProjectList()

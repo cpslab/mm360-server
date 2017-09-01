@@ -7,6 +7,7 @@ import com.nshiba.entity.*
 import com.nshiba.model.AwsClient
 import com.nshiba.toObject
 import com.nshiba.toStringFromJackson
+import org.springframework.http.MediaType
 
 
 @RestController
@@ -27,18 +28,17 @@ class ApiController {
     }
 
     @CrossOrigin(origins = arrayOf("http://localhost:3000"))
-    @RequestMapping(path = arrayOf("/api/project/{name}/sensor"), method = arrayOf(RequestMethod.POST))
-    internal fun uploadSensor(@PathVariable name: String, @RequestBody data: String): String {
-        val dataList = data.split(";")
-        println("uploadData: ${dataList.size}")
-
-        val model = SensorCalculateModel(dataList)
-        val uploadData = model.createData()
-        val json = ObjectMapper().writeValueAsString(uploadData)
+    @RequestMapping(path = arrayOf("/api/project/{name}/sensor"),
+                    method = arrayOf(RequestMethod.POST),
+                    consumes = arrayOf(MediaType.APPLICATION_JSON_VALUE))
+    internal fun uploadSensor(@PathVariable name: String,
+                              @RequestBody data: Array<CapturePointData>): String {
+        val json = ObjectMapper().writeValueAsString(data)
         val filename = "$name/$sensorFileName"
         awsClient.putSensorData(name, json)
 
-        val projectList = awsClient.fetchProjectList().toObject<List<ProjectListItemData>>().toMutableList()
+        val projectList = awsClient.fetchProjectList()
+                .toObject<List<ProjectListItemData>>().toMutableList()
         println(projectList)
         projectList.map {
             if (it.projectName == name) {
@@ -52,8 +52,10 @@ class ApiController {
     }
 
     @CrossOrigin(origins = arrayOf("http://localhost:3000"))
-    @RequestMapping(path = arrayOf("/api/project/{name}/sensor"), method = arrayOf(RequestMethod.GET))
+    @RequestMapping(path = arrayOf("/api/project/{name}/sensor"),
+                    method = arrayOf(RequestMethod.GET))
     internal fun fetchSensor(@PathVariable name: String): String {
+        println(name)
         return awsClient.fetchSensorData(name)
     }
 

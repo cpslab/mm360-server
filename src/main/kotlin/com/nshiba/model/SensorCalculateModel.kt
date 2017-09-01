@@ -72,7 +72,7 @@ class SensorCalculateModel(private val sensorData: List<String>){
         val right = cos(point1.latitude.radian()) * cos(point2.latitude.radian()) * cos(point2.longitude.radian() - point1.longitude.radian())
         val distance = 6378.14 * Math.acos(left + right)
 
-        return LinkData(id = targetId, theta = dirN0, distance = distance)
+        return LinkData(id = targetId, theta = dirN0, distance = distance, phi = 0.0)
     }
 
     private fun cos(num: Double): Double = Math.cos(num)

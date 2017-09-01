@@ -3,6 +3,7 @@ package com.nshiba.model
 import com.amazonaws.AmazonClientException
 import com.amazonaws.AmazonServiceException
 import com.amazonaws.HttpMethod
+import com.amazonaws.auth.EnvironmentVariableCredentialsProvider
 import com.amazonaws.auth.profile.ProfileCredentialsProvider
 import com.amazonaws.client.builder.AwsClientBuilder
 import com.amazonaws.services.s3.AmazonS3
@@ -33,7 +34,7 @@ class AwsClient {
     private fun createClient(): AmazonS3 = AmazonS3ClientBuilder
             .standard()
             .withEndpointConfiguration(AwsClientBuilder.EndpointConfiguration(ENDPOINT_URL, REGION))
-            .withCredentials(ProfileCredentialsProvider())
+            .withCredentials(EnvironmentVariableCredentialsProvider())
             .build()
 
     fun putSensorData(projectName: String, json: String) = putObject("$projectName/$sensorFileName", json)

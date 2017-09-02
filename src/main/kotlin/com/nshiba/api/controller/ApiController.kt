@@ -17,7 +17,7 @@ class ApiController {
 
     private val awsClient = AwsClient()
 
-    @CrossOrigin(origins = arrayOf("http://localhost:3000", "https://cpslab.github.io/mm360/*"))
+    @CrossOrigin(origins = arrayOf("http://localhost:3000", "https://cpslab.github.io"))
     @RequestMapping(path = arrayOf("/api/create"), method = arrayOf(RequestMethod.POST))
     internal fun createProject(@RequestBody name: String): String {
         val projectList = awsClient.fetchProjectList().toObject<List<ProjectListItemData>>().toMutableList()
@@ -27,7 +27,7 @@ class ApiController {
         return awsClient.updateProjectList(projectList)
     }
 
-    @CrossOrigin(origins = arrayOf("http://localhost:3000", "https://cpslab.github.io/mm360/*"))
+    @CrossOrigin(origins = arrayOf("http://localhost:3000", "https://cpslab.github.io"))
     @RequestMapping(path = arrayOf("/api/project/{name}/sensor"),
                     method = arrayOf(RequestMethod.POST),
                     consumes = arrayOf(MediaType.APPLICATION_JSON_VALUE))
@@ -51,7 +51,7 @@ class ApiController {
         return awsClient.updateProjectList(projectList)
     }
 
-    @CrossOrigin(origins = arrayOf("http://localhost:3000", "https://cpslab.github.io/mm360/*"))
+    @CrossOrigin(origins = arrayOf("http://localhost:3000", "https://cpslab.github.io"))
     @RequestMapping(path = arrayOf("/api/project/{name}/sensor"),
                     method = arrayOf(RequestMethod.GET))
     internal fun fetchSensor(@PathVariable name: String): String {
@@ -59,7 +59,7 @@ class ApiController {
         return awsClient.fetchSensorData(name)
     }
 
-    @CrossOrigin(origins = arrayOf("http://localhost:3000", "https://cpslab.github.io/mm360/*"))
+    @CrossOrigin(origins = arrayOf("http://localhost:3000", "https://cpslab.github.io"))
     @RequestMapping(path = arrayOf("/api/project/{name}/pre-signed-url-list"), method = arrayOf(RequestMethod.GET))
     internal fun fetchPreSignedUploadUrlList(@PathVariable name: String): List<UploadTargetVideoData> {
         val sensorDataList = awsClient.fetchSensorData(name).toObject<List<CapturePointData>>()
@@ -70,21 +70,21 @@ class ApiController {
         return preSignedUploadUrlList
     }
 
-//    @CrossOrigin(origins = arrayOf("http://localhost:3000", "https://cpslab.github.io/mm360/*"))
+//    @CrossOrigin(origins = arrayOf("http://localhost:3000", "https://cpslab.github.io"))
     @CrossOrigin(origins = arrayOf("*"))
     @RequestMapping(path = arrayOf("/api/projects"), method = arrayOf(RequestMethod.GET))
     internal fun fetchProject(): String {
         return awsClient.fetchProjectList()
     }
 
-    @CrossOrigin(origins = arrayOf("http://localhost:3000", "https://cpslab.github.io/mm360/*"))
+    @CrossOrigin(origins = arrayOf("http://localhost:3000", "https://cpslab.github.io"))
     @RequestMapping(path = arrayOf("/api/project/{name}"), method = arrayOf(RequestMethod.GET))
     internal fun fetchProjectData(@PathVariable name: String): List<ProjectListItemData> {
         val projectList = awsClient.fetchProjectList().toObject<List<ProjectListItemData>>()
         return projectList.filter { it.projectName == name }
     }
 
-    @CrossOrigin(origins = arrayOf("http://localhost:3000", "https://cpslab.github.io/mm360/*"))
+    @CrossOrigin(origins = arrayOf("http://localhost:3000", "https://cpslab.github.io"))
     @RequestMapping(path = arrayOf("/api/project/{name}"), method = arrayOf(RequestMethod.PATCH))
     internal fun updateProjectData(@PathVariable name: String, @RequestBody body: ProjectListItemData): String {
         println("update project data: patch")
@@ -115,7 +115,7 @@ class ApiController {
         awsClient.updateProjectList(updatedList)
     }
 
-    @CrossOrigin(origins = arrayOf("http://localhost:3000", "https://cpslab.github.io/mm360/*"))
+    @CrossOrigin(origins = arrayOf("http://localhost:3000", "https://cpslab.github.io"))
     @RequestMapping(path = arrayOf("/api/policy"), method = arrayOf(RequestMethod.GET))
     internal fun fetchProjectPolicy(@RequestParam("project_name") projectName: String,
                                     @RequestParam("filename") filename: String,

@@ -1,10 +1,10 @@
 package com.nshiba.api.controller
 
-import com.nshiba.model.SensorCalculateModel
 import org.springframework.web.bind.annotation.*
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.nshiba.entity.*
 import com.nshiba.model.AwsClient
+import com.nshiba.model.SensorCalculateModel
 import com.nshiba.toObject
 import com.nshiba.toStringFromJackson
 import org.springframework.http.MediaType
@@ -14,6 +14,8 @@ import org.springframework.http.MediaType
 class ApiController {
 
     private val sensorFileName = "data.json"
+
+    private val sensorRawPath = "sensor-raw"
 
     private val awsClient = AwsClient()
 
@@ -31,17 +33,32 @@ class ApiController {
     @RequestMapping(path = arrayOf("/api/project/{name}/sensor"),
                     method = arrayOf(RequestMethod.POST),
                     consumes = arrayOf(MediaType.APPLICATION_JSON_VALUE))
-    internal fun uploadSensor(@PathVariable name: String,
+    internal fun uploadSensorJson(@PathVariable name: String,
                               @RequestBody data: Array<CapturePointData>): String {
+        return uploadSensor(name, data)
+    }
+
+    @CrossOrigin(origins = arrayOf("http://localhost:3000"))
+    @RequestMapping(path = arrayOf("/api/project/{name}/sensor/csv"), method = arrayOf(RequestMethod.POST))
+    internal fun uploadSensorCsv(@PathVariable name: String, @RequestBody data: String): String {
+        val dataList = data.split(";")
+        println("uploadData: ${dataList.size}")
+        val model = SensorCalculateModel(dataList)
+        val uploadData = model.createData()
+
+        return uploadSensor(name, uploadData.toTypedArray())
+    }
+
+    private fun uploadSensor(projectName: String, data: Array<CapturePointData>): String {
         val json = ObjectMapper().writeValueAsString(data)
-        val filename = "$name/$sensorFileName"
-        awsClient.putSensorData(name, json)
+        val filename = "$projectName/$sensorFileName"
+        awsClient.putSensorData(projectName, json)
 
         val projectList = awsClient.fetchProjectList()
                 .toObject<List<ProjectListItemData>>().toMutableList()
         println(projectList)
         projectList.map {
-            if (it.projectName == name) {
+            if (it.projectName == projectName) {
                 it.dataPath = "projects/$filename"
             }
             it
@@ -57,6 +74,33 @@ class ApiController {
     internal fun fetchSensor(@PathVariable name: String): String {
         println(name)
         return awsClient.fetchSensorData(name)
+    }
+
+    @CrossOrigin(origins = arrayOf("*"))
+    @RequestMapping(path = arrayOf("/api/project/{name}/sensor/raw"), method = arrayOf(RequestMethod.POST))
+    internal fun uploadSensorRaw(@PathVariable name: String, @RequestBody data: String): String {
+        val projectList = awsClient.fetchProjectList().toObject<List<ProjectListItemData>>()
+        val projectData = projectList.filter { it.projectName == name }[0]
+        val filename = "raw${projectData.sensorRawFilenameList.size}"
+        awsClient.putObject("$name/$sensorRawPath/$filename", data)
+
+        projectData.sensorRawFilenameList.add(filename)
+        return updateProjectList(projectData)
+    }
+
+    @CrossOrigin(origins = arrayOf("*"))
+    @RequestMapping(path = arrayOf("/api/project/{name}/sensor/raw/complete"), method = arrayOf(RequestMethod.POST))
+    internal fun completeSensorUpload(@PathVariable name: String): String {
+        val projectList = awsClient.fetchProjectList().toObject<List<ProjectListItemData>>()
+        val projectData = projectList.filter { it.projectName == name }[0]
+        val sensorRawNameList = projectData.sensorRawFilenameList
+
+        val sensorRawList = sensorRawNameList.map {
+            awsClient.fetchSensorRawData(name, it)
+        }
+
+        val sensorList = SensorCalculateModel(sensorRawList).createData()
+        return uploadSensor(name, sensorList.toTypedArray())
     }
 
     @CrossOrigin(origins = arrayOf("http://localhost:3000", "https://cpslab.github.io"))
@@ -107,12 +151,12 @@ class ApiController {
         awsClient.putSensorData(name, sensorData.toStringFromJackson())
     }
 
-    private fun updateProjectList(data: ProjectListItemData) {
+    private fun updateProjectList(data: ProjectListItemData): String {
         val projectList = awsClient.fetchProjectList().toObject<List<ProjectListItemData>>()
         val updatedList = projectList.map {
             if (it.projectId == data.projectId) { data } else { it }
         }
-        awsClient.updateProjectList(updatedList)
+        return awsClient.updateProjectList(updatedList)
     }
 
     @CrossOrigin(origins = arrayOf("http://localhost:3000", "https://cpslab.github.io"))

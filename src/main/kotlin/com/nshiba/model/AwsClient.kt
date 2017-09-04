@@ -4,7 +4,6 @@ import com.amazonaws.AmazonClientException
 import com.amazonaws.AmazonServiceException
 import com.amazonaws.HttpMethod
 import com.amazonaws.auth.EnvironmentVariableCredentialsProvider
-import com.amazonaws.auth.profile.ProfileCredentialsProvider
 import com.amazonaws.client.builder.AwsClientBuilder
 import com.amazonaws.services.s3.AmazonS3
 import com.amazonaws.services.s3.AmazonS3ClientBuilder
@@ -30,6 +29,8 @@ class AwsClient {
     private val projectListPath = "project-list.json"
 
     private val sensorFileName = "data.json"
+
+    private val sensorRawPath = "sensor-raw"
 
     private fun createClient(): AmazonS3 = AmazonS3ClientBuilder
             .standard()
@@ -81,6 +82,20 @@ class AwsClient {
     fun fetchSensorData(projectName: String): String =
             try {
                 val path = "$rootDir/$projectName/data.json"
+                val s3Object = s3Client.getObject(bucketName, path)
+                println(path)
+                s3Object.objectContent.reader().readText()
+            } catch (ioe: IOException) {
+                "File IO Error: ${ioe.message}"
+            } catch (ase: AmazonServiceException) {
+                showASEMessage(ase)
+            } catch (ace: AmazonClientException) {
+                showACEMessage(ace)
+            }
+
+    fun fetchSensorRawData(projectName: String, filename: String) =
+            try {
+                val path = "$rootDir/$projectName/$sensorRawPath/$filename"
                 val s3Object = s3Client.getObject(bucketName, path)
                 println(path)
                 s3Object.objectContent.reader().readText()

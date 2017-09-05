@@ -9,7 +9,6 @@ import com.nshiba.toObject
 import com.nshiba.toStringFromJackson
 import org.springframework.http.MediaType
 
-
 @RestController
 class ApiController {
 
@@ -78,13 +77,22 @@ class ApiController {
 
     @CrossOrigin(origins = arrayOf("*"))
     @RequestMapping(path = arrayOf("/api/project/{name}/sensor/raw"), method = arrayOf(RequestMethod.POST))
-    internal fun uploadSensorRaw(@PathVariable name: String, @RequestBody data: String): String {
+    internal fun uploadSensorRaw(@PathVariable name: String, @RequestBody dataList: Array<SensorRawData>): String {
         val projectList = awsClient.fetchProjectList().toObject<List<ProjectListItemData>>()
         val projectData = projectList.filter { it.projectName == name }[0]
-        val filename = "raw${projectData.sensorRawFilenameList.size}"
-        awsClient.putObject("$name/$sensorRawPath/$filename", data)
 
-        projectData.sensorRawFilenameList.add(filename)
+        dataList.forEach {
+            if (!it.sensor.isNullOrEmpty() || !it.sensor.isBlank()) {
+                val filename = it.name
+                awsClient.putObject("$name/$sensorRawPath/$filename", it.sensor)
+                println(filename)
+
+                projectData.sensorRawFilenameList.remove(filename)
+                projectData.sensorRawFilenameList.add(filename)
+            }
+        }
+
+        println(projectData)
         return updateProjectList(projectData)
     }
 
